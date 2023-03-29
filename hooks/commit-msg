@@ -2,7 +2,7 @@
 import sys
 from enum import Enum
 
-commit_types = ["FIX, WIP", "ADD", "CREATE", "CHANGE", "IMPROVE", "REMOVE"]
+commit_types = ["FIX", "WIP", "ADD", "CREATE", "CHANGE", "IMPROVE", "REMOVE"]
 
 # https://stackoverflow.com/questions/287871/how-to-print-colored-text-to-the-terminal
 class bcolors(str, Enum):
