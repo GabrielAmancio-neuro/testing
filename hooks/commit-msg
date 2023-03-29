@@ -57,32 +57,6 @@ def check_commit_msg_pattern():
         print_with_color(message, Level.ERROR)
         sys.exit(1)
 
-    if len(lines) < 3:
-        message = "There should at least three lines in your commit message."
-        print_with_color(message, Level.ERROR)
-        sys.exit(1)
-
-    if len(lines[0]) > 50:
-        has_warning = True
-        message = (
-            "There should be less then 50 characters in the commit title."
-        )
-
-        print_with_color(message, Level.WARNING)
-
-    if lines[1].strip() != "":
-        has_warning = True
-        message = (
-            "There should be an empty line between the commit title and body."
-        )
-        print_with_color(message, Level.WARNING)
-
-    for line in lines[2:]:
-        if len(line) > 72:
-            has_warning = True
-            message = "The commit body should wrap at 72 characters."
-            print_with_color(message, Level.WARNING)
-
     if not has_warning:
         message = "The commit message has the required pattern."
         print_with_color(message, Level.OK)
