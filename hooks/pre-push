@@ -52,7 +52,7 @@ def is_on_branch(
         return False
     chunks = ref_name.strip().split("/")
     branch_name = "/".join(chunks[2:])
-    if branch_name in protected == False:
+    if (branch_name in protected) == False:
         message = "You can push on this branch directly"
         print_with_color(message, Level.OK)
         return 0
