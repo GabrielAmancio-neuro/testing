@@ -63,7 +63,7 @@ def is_on_branch(
 
 
 def main() -> int:
-    protected = ["main", "develop", "hml", "test"]
+    protected = ["develop", "hml", "test"]
     return int(is_on_branch(protected))
 
 
