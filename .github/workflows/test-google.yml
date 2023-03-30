@@ -6,8 +6,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name : Print Title of PR
-      run: echo The Title of your PR is ${{ github.event.pull_request.title }}
     - name: Google Chat Notification
       run: |
           curl --location --request POST '${{ secrets.WEBHOOK }}' \
@@ -36,14 +34,14 @@ jobs:
                                    },
                                    {
                                      "keyValue": {
-                                          "topLabel": "Assigned Lables",
+                                          "topLabel": "Assigned Labels",
                                           "content": "- ${{ join(github.event.pull_request.labels.*.name) }}"
                                       }
                                    },
                                    {
                                      "keyValue": {
-                                          "topLabel": "Assignees",
-                                          "content": "- ${{ join(github.event.pull_request.assignees.*.login) }}"
+                                          "topLabel": "Reviewer",
+                                          "content": "- ${{ join(github.event.pull_request.requested_reviewers.*.login) }}"
                                       }
                                    },
                                    {
@@ -56,7 +54,7 @@ jobs:
                                       "buttons": [
                                           {
                                               "textButton": {
-                                                  "text": "OPEN ISSUE",
+                                                  "text": "OPEN PR",
                                                   "onClick": {
                                                       "openLink": {
                                                           "url": "${{ github.event.pull_request.html_url }}"
