@@ -4,6 +4,7 @@ from enum import Enum
 
 commit_types = ["FIX", "WIP", "ADD", "CREATE", "CHANGE", "IMPROVE", "REMOVE"]
 
+
 # https://stackoverflow.com/questions/287871/how-to-print-colored-text-to-the-terminal
 class bcolors(str, Enum):
     OK = "\033[92m"
@@ -23,16 +24,14 @@ class Level(str, Enum):
 
 def print_with_color(message: str, level: Level):
     print(
-        bcolors[level]
-        + bcolors.BOLD
-        + f"{level}: [Policy] "
-        + message
-        + bcolors.ENDC
+        bcolors[level] + bcolors.BOLD + f"{level}: [Policy] " + message + bcolors.ENDC
     )
 
+
 def get_key_word(message: str):
-    split = message[0].split(':')
+    split = message[0].split(":")
     return split[0]
+
 
 def check_commit_msg_pattern():
     # The argument passed to the "commit-msg" hook is the path to a
@@ -47,20 +46,21 @@ def check_commit_msg_pattern():
     lines = [l for l in lines if not l.strip().startswith("#")]
 
     has_warning = False
-    if lines[0].find(':') == -1:
+    if lines[0].find(":") == -1:
         message = "There should be a key word in the beginnig of the commit to clarify his objective"
         print_with_color(message, Level.ERROR)
-        sys.exit(1)
+        return 1
 
     if get_key_word(lines) not in commit_types:
         message = "The key word of the commit should be one of these: FIX, WIP, ADD, CREATE, CHANGE, IMPROVE, REMOVE"
         print_with_color(message, Level.ERROR)
-        sys.exit(1)
+        return 1
 
     if not has_warning:
         message = "The commit message has the required pattern."
         print_with_color(message, Level.OK)
+        return 0
 
 
 if __name__ == "__main__":
-    check_commit_msg_pattern()
+    raise SystemExit(check_commit_msg_pattern())

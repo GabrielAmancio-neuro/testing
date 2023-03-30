@@ -1,26 +1,71 @@
+#!/usr/bin/env python
+from __future__ import annotations
 
-#!/bin/bash
+import subprocess
+from enum import Enum
+from typing import Any
 
-current_branch=`git rev-parse --abbrev-ref HEAD`
-if [[ $current_branch =~ "master"|"main"|"test"|"develop"|"hml" ]]; then
-    message="Please don't push directly to $current_branch."
-    echo -e "\033[1;31mERROR: $message\033[0m";
-    exit 1
-fi
 
-repo_dir=`git rev-parse --show-toplevel`
+class CalledProcessError(RuntimeError):
+    pass
 
-message="[Policy] Doing unit tests ..."
-echo -e "\033[1;34mInfo: $message\033[0m"
 
-pytest $repo_dir/test.py
+class bcolors(str, Enum):
+    OK = "\033[92m"
+    INFO = "\033[94m"
+    WARNING = "\033[93m"
+    ERROR = "\033[91m"
+    BOLD = "\033[1m"
+    ENDC = "\033[0m"
 
-if [ $? -eq 1 ]; then
-    message="[Policy] Unit tests failed, please check and fix your code."
-    echo -e "\033[1;31mERROR: $message\033[0m";
-    exit 1
-else
-    message="[Policy] Passed unit tests."
-    echo -e "\033[1;32mOK: $message\033[0m"
-    exit 0
-fi
+
+class Level(str, Enum):
+    OK = "OK"
+    INFO = "INFO"
+    WARNING = "WARNING"
+    ERROR = "ERROR"
+
+
+def print_with_color(message: str, level: Level):
+    print(
+        bcolors[level] + bcolors.BOLD + f"{level}: [Policy] " + message + bcolors.ENDC
+    )
+
+
+def cmd_output(*cmd: str, retcode: int | None = 0, **kwargs: Any) -> str:
+    kwargs.setdefault("stdout", subprocess.PIPE)
+    kwargs.setdefault("stderr", subprocess.PIPE)
+    proc = subprocess.Popen(cmd, **kwargs)
+    stdout, stderr = proc.communicate()
+    stdout = stdout.decode()
+    if retcode is not None and proc.returncode != retcode:
+        raise CalledProcessError(cmd, retcode, proc.returncode, stdout, stderr)
+    return stdout
+
+
+def is_on_branch(
+    protected: list,
+) -> bool:
+    try:
+        ref_name = cmd_output("git", "symbolic-ref", "HEAD")
+    except CalledProcessError:
+        return False
+    chunks = ref_name.strip().split("/")
+    branch_name = "/".join(chunks[2:])
+    if branch_name in protected == 0:
+        message = "You can push on this branch directly"
+        print_with_color(message, Level.OK)
+        return 0
+    else:
+        message = "You can't push on this branch directly, please, create a separated one and work with PR's"
+        print_with_color(message, Level.ERROR)
+        return 1
+
+
+def main() -> int:
+    protected = ["main", "develop", "hml", "test"]
+    return int(is_on_branch(protected))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
