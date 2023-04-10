@@ -36,7 +36,6 @@ def get_key_word(message: str):
 def check_jira_pattern(message: str):
     padrao = re.compile(r'\[[A-Za-z]+-\d+\]')
     split = message[0].split(":")
-    print(padrao.search(split[0]))
     return padrao.search(split[0])
 
 
@@ -54,15 +53,16 @@ def check_commit_msg_pattern():
         print_with_color(message, Level.ERROR)
         return 1
 
+    if not check_jira_pattern(lines):
+        message = "The commit message should mention the Jira card associated to it"
+        print_with_color(message, Level.ERROR)
+        return 1
+
     if get_key_word(lines) not in commit_types:
         message = "The key word of the commit should be one of these: chore, docs, feat, ci, fix, build, style, test"
         print_with_color(message, Level.ERROR)
         return 1
 
-    if not check_jira_pattern(lines):
-        message = "The commit message should mention the Jira card associated to it"
-        print_with_color(message, Level.ERROR)
-        return 1
 
     if not has_warning:
         message = "The commit message has the required pattern."
