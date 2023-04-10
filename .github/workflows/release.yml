@@ -30,3 +30,54 @@ jobs:
           body: ${{steps.build_changelog.outputs.changelog}}
           draft: false
           prerelease: false
+      - name: Google Chat Notification
+        run: |
+            curl --location --request POST '${{ secrets.WEBHOOK }}' \
+            --header 'Content-Type: application/json' \
+            --data-raw '{
+                "cards": [
+                    {
+                        "header": {
+                            "title": "Release alert",
+                        },
+                        "sections": [
+                            {
+                                "widgets": [
+                                    {
+                                      "keyValue": {
+                                            "topLabel": "Creator",
+                                            "content": "${{ github.event.push.author.login }}"
+                                        },
+                                    },
+                                    {
+                                      "keyValue": {
+                                            "topLabel": "Version",
+                                            "content": "${{ github.ref }}"
+                                        }
+                                    },
+                                    {
+                                      "keyValue": {
+                                            "topLabel": "Body",
+                                            "content": "- ${{ steps.build_changelog.outputs.changelog }}"
+                                        }
+                                    },
+                                    {
+                                        "buttons": [
+                                            {
+                                                "textButton": {
+                                                    "text": "OPEN RELEASE",
+                                                    "onClick": {
+                                                        "openLink": {
+                                                            "url": "${{ steps.create_release.outputs.html_url }}"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }'
