@@ -2,6 +2,7 @@ name: Release
 
 on:
   push:
+    # Sequence of patterns matched against refs/tags
     tags:
       - '[0-9]+.[0-9]+.[0-9]+*'
 
@@ -45,19 +46,19 @@ jobs:
                                     {
                                       "keyValue": {
                                             "topLabel": "Creator",
-                                            "content": ${{ github.event.push.author.login }}
+                                            "content": "${{ github.event }}"
                                         },
                                     },
                                     {
                                       "keyValue": {
                                             "topLabel": "Version",
-                                            "content": ${{ github.ref }}
+                                            "content": "${{ github.ref }}"
                                         }
                                     },
                                     {
                                       "keyValue": {
                                             "topLabel": "Body",
-                                            "content": ${{ steps.build_changelog.outputs.changelog }}
+                                            "content": "- ${{ steps.build_changelog.outputs.changelog }}"
                                         }
                                     },
                                     {
@@ -67,7 +68,7 @@ jobs:
                                                     "text": "OPEN RELEASE",
                                                     "onClick": {
                                                         "openLink": {
-                                                            "url": ${{ steps.create_release.outputs.html_url }}
+                                                            "url": "${{ steps.create_release.outputs.html_url }}"
                                                         }
                                                     }
                                                 }
