@@ -46,7 +46,7 @@ jobs:
                                     {
                                       "keyValue": {
                                             "topLabel": "Creator",
-                                            "content": "${{ github.event.push.author.login }}"
+                                            "content": "${{ github.event.push.pusher.name }}"
                                         },
                                     },
                                     {
