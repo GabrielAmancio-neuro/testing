@@ -6,3 +6,7 @@ def division(dividend: int, divisor: int) -> Tuple[int, int]:
     quotient = floor(dividend / divisor)
     remainder = dividend % divisor
     return quotient, remainder
+
+
+def main() -> str:
+    return "oi"
