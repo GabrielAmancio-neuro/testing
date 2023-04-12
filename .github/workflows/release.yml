@@ -14,11 +14,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Build changelog
-        id: build_changelog
-        uses: mikepenz/release-changelog-builder-action@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate Changelog
+        uses: github-changelog-generator/github-changelog-generator@v1.17.2
+        with:
+          future-release: ${{ github.ref }}
+          since-tag: ${{ github.event.before }}
+          output-file: CHANGELOG.md
       - name: Create release
         id: create_release
         uses: actions/create-release@latest
@@ -27,9 +28,18 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
-          body: ${{steps.build_changelog.outputs.changelog}}
+          body: |
+            $(cat CHANGELOG.md)
           draft: false
           prerelease: false
+      - name: Send Notification to Google Chat
+        uses: google-github-actions/chat@v1
+        with:
+          chat_webhook: ${{ secrets.WEBHOOK }}
+          message: |
+            A new release has been created!
+            Release: ${{ github.ref }}
+            Changelog: $(cat CHANGELOG.md)
       - name: Google Chat Notification
         run: |
             curl --location --request POST '${{ secrets.WEBHOOK }}' \
