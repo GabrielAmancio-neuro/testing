@@ -15,11 +15,11 @@ jobs:
         with:
           fetch-depth: 0
       - name: Generate Changelog
-        uses: github-changelog-generator/github-changelog-generator@v1.17.2
+        uses: release-drafter/release-drafter@v7.2.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          future-release: ${{ github.ref }}
-          since-tag: ${{ github.event.before }}
-          output-file: CHANGELOG.md
+          tag: ${{ github.ref }}
       - name: Create release
         id: create_release
         uses: actions/create-release@latest
@@ -32,14 +32,6 @@ jobs:
             $(cat CHANGELOG.md)
           draft: false
           prerelease: false
-      - name: Send Notification to Google Chat
-        uses: google-github-actions/chat@v1
-        with:
-          chat_webhook: ${{ secrets.WEBHOOK }}
-          message: |
-            A new release has been created!
-            Release: ${{ github.ref }}
-            Changelog: $(cat CHANGELOG.md)
       - name: Google Chat Notification
         run: |
             curl --location --request POST '${{ secrets.WEBHOOK }}' \
@@ -68,7 +60,7 @@ jobs:
                                     {
                                       "keyValue": {
                                             "topLabel": "Body",
-                                            "content": "- ${{ steps.build_changelog.outputs.changelog }}"
+                                            "content": "$(cat CHANGELOG.md)"
                                         }
                                     },
                                     {
