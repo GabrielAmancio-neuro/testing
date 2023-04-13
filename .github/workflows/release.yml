@@ -27,8 +27,8 @@ jobs:
         id: get_release_id
         uses: pozetroninc/github-action-get-latest-release@master
         with:
-          owner: gas-neuro
-          repo: testing
+          repository: ${{ github.repository }}
+          excludes: prerelease
       - name: Publish Release
         run: |
           curl \
