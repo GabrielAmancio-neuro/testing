@@ -3,8 +3,11 @@ name: Release
 on:
   push:
     # Sequence of patterns matched against refs/tags
-    tags:
-      - '[0-9]+.[0-9]+.[0-9]+*'
+    branches:
+    - main
+  pull_request:
+    # Only following types are handled by the action, but one can default to all as well
+    types: [opened, reopened, synchronize]
 
 jobs:
   release:
@@ -14,72 +17,72 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Generate Changelog
+      - name: Generate Release draft
         uses: release-drafter/release-drafter@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag: ${{ github.ref }}
-      - name: Create release
-        id: create_release
-        uses: actions/create-release@latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: |
-            $(cat CHANGELOG.md)
-          draft: false
-          prerelease: false
-      - name: Google Chat Notification
-        run: |
-            curl --location --request POST '${{ secrets.WEBHOOK }}' \
-            --header 'Content-Type: application/json' \
-            --data-raw '{
-                "cards": [
-                    {
-                        "header": {
-                            "title": "Release alert",
-                        },
-                        "sections": [
-                            {
-                                "widgets": [
-                                    {
-                                      "keyValue": {
-                                            "topLabel": "Creator",
-                                            "content": "${{ github.event.push.pusher.name }}"
-                                        },
-                                    },
-                                    {
-                                      "keyValue": {
-                                            "topLabel": "Version",
-                                            "content": "${{ github.ref }}"
-                                        }
-                                    },
-                                    {
-                                      "keyValue": {
-                                            "topLabel": "Body",
-                                            "content": "$(cat CHANGELOG.md)"
-                                        }
-                                    },
-                                    {
-                                        "buttons": [
-                                            {
-                                                "textButton": {
-                                                    "text": "OPEN RELEASE",
-                                                    "onClick": {
-                                                        "openLink": {
-                                                            "url": "${{ steps.create_release.outputs.html_url }}"
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }'
+      # - name: Create release
+      #   id: create_release
+      #   uses: actions/create-release@latest
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      #   with:
+      #     tag_name: ${{ github.ref }}
+      #     release_name: Release ${{ github.ref }}
+      #     body: |
+      #       $(cat CHANGELOG.md)
+      #     draft: false
+      #     prerelease: false
+      # - name: Google Chat Notification
+      #   run: |
+      #       curl --location --request POST '${{ secrets.WEBHOOK }}' \
+      #       --header 'Content-Type: application/json' \
+      #       --data-raw '{
+      #           "cards": [
+      #               {
+      #                   "header": {
+      #                       "title": "Release alert",
+      #                   },
+      #                   "sections": [
+      #                       {
+      #                           "widgets": [
+      #                               {
+      #                                 "keyValue": {
+      #                                       "topLabel": "Creator",
+      #                                       "content": "${{ github.event.push.pusher.name }}"
+      #                                   },
+      #                               },
+      #                               {
+      #                                 "keyValue": {
+      #                                       "topLabel": "Version",
+      #                                       "content": "${{ github.ref }}"
+      #                                   }
+      #                               },
+      #                               {
+      #                                 "keyValue": {
+      #                                       "topLabel": "Body",
+      #                                       "content": "$(cat CHANGELOG.md)"
+      #                                   }
+      #                               },
+      #                               {
+      #                                   "buttons": [
+      #                                       {
+      #                                           "textButton": {
+      #                                               "text": "OPEN RELEASE",
+      #                                               "onClick": {
+      #                                                   "openLink": {
+      #                                                       "url": "${{ steps.create_release.outputs.html_url }}"
+      #                                                   }
+      #                                               }
+      #                                           }
+      #                                       }
+      #                                   ]
+      #                               }
+      #                           ]
+      #                       }
+      #                   ]
+      #               }
+      #           ]
+      #       }'
