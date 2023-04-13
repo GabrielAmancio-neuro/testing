@@ -29,10 +29,10 @@ jobs:
                            -H "Accept: application/vnd.github.v3+json" \
                            https://api.github.com/repos/$GITHUB_REPOSITORY/releases | \
                            jq '.[] | select(.draft == true) | .id' | head -n 1)
-          echo "ID do último draft release: $RELEASE_ID"
+          echo "::set-output name=id::$RELEASE_ID"
 
       - name: Publicar release
-        if: ${{ env.RELEASE_ID != '' }}
+        if: ${{ steps.last_release.outputs.id != null }}
         run: |
           curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                -H "Accept: application/vnd.github.v3+json" \
