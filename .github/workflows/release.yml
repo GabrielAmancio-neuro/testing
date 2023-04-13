@@ -5,9 +5,9 @@ on:
     # Sequence of patterns matched against refs/tags
     branches:
     - main
-  pull_request:
-    # Only following types are handled by the action, but one can default to all as well
-    types: [opened, reopened, synchronize]
+  # pull_request:
+  #   # Only following types are handled by the action, but one can default to all as well
+  #   types: [opened, reopened, synchronize]
 
 jobs:
   release:
@@ -23,6 +23,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag: ${{ github.ref }}
+      - name: get release draft id
+        id: get_release_id
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          owner: gas-neuro
+          repo: testing
+      - name: Publish Release
+        run: |
+          curl \
+            -X PATCH \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/$GITHUB_REPOSITORY/releases/${{ steps.get_release_id.outputs.id }} \
+            -d '{"draft":false}'
       # - name: Create release
       #   id: create_release
       #   uses: actions/create-release@latest
