@@ -23,20 +23,22 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag: ${{ github.ref }}
-      - name: get release draft id
-        id: get_release_id
-        uses: pozetroninc/github-action-get-latest-release@master
-        with:
-          repository: ${{ github.repository }}
-          excludes: prerelease
-      - name: Publish Release
+      - name: Obter ID do último draft release
         run: |
-          curl \
-            -X PATCH \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/$GITHUB_REPOSITORY/releases/${{ steps.get_release_id.outputs.id }} \
-            -d '{"draft":false}'
+          RELEASE_ID=$(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                           -H "Accept: application/vnd.github.v3+json" \
+                           https://api.github.com/repos/$GITHUB_REPOSITORY/releases | \
+                           jq '.[] | select(.draft == true) | .id' | head -n 1)
+          echo "ID do último draft release: $RELEASE_ID"
+
+      - name: Publicar release
+        if: ${{ env.RELEASE_ID != '' }}
+        run: |
+          curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+               -H "Accept: application/vnd.github.v3+json" \
+               -X PATCH \
+               https://api.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID \
+               -d '{"draft":false,"prerelease":false}'
       # - name: Create release
       #   id: create_release
       #   uses: actions/create-release@latest
@@ -49,54 +51,32 @@ jobs:
       #       $(cat CHANGELOG.md)
       #     draft: false
       #     prerelease: false
-      # - name: Google Chat Notification
-      #   run: |
-      #       curl --location --request POST '${{ secrets.WEBHOOK }}' \
-      #       --header 'Content-Type: application/json' \
-      #       --data-raw '{
-      #           "cards": [
-      #               {
-      #                   "header": {
-      #                       "title": "Release alert",
-      #                   },
-      #                   "sections": [
-      #                       {
-      #                           "widgets": [
-      #                               {
-      #                                 "keyValue": {
-      #                                       "topLabel": "Creator",
-      #                                       "content": "${{ github.event.push.pusher.name }}"
-      #                                   },
-      #                               },
-      #                               {
-      #                                 "keyValue": {
-      #                                       "topLabel": "Version",
-      #                                       "content": "${{ github.ref }}"
-      #                                   }
-      #                               },
-      #                               {
-      #                                 "keyValue": {
-      #                                       "topLabel": "Body",
-      #                                       "content": "$(cat CHANGELOG.md)"
-      #                                   }
-      #                               },
-      #                               {
-      #                                   "buttons": [
-      #                                       {
-      #                                           "textButton": {
-      #                                               "text": "OPEN RELEASE",
-      #                                               "onClick": {
-      #                                                   "openLink": {
-      #                                                       "url": "${{ steps.create_release.outputs.html_url }}"
-      #                                                   }
-      #                                               }
-      #                                           }
-      #                                       }
-      #                                   ]
-      #                               }
-      #                           ]
-      #                       }
-      #                   ]
-      #               }
-      #           ]
-      #       }'
+      - name: Google Chat Notification
+        run: |
+            curl --location --request POST '${{ secrets.WEBHOOK }}' \
+            --header 'Content-Type: application/json' \
+            --data-raw '{
+                "cards": [
+                    {
+                        "header": {
+                            "title": "${{ github.repository }}",
+                            "subtitle": "Release ${{ steps.last_release.outputs.id }}",
+                            "imageUrl": "${{ github.event.sender.avatar_url }}"
+                        },
+                        "sections": [
+                            {
+                                "widgets": [
+                                    {
+                                    "textParagraph": {
+                                      "text": "**Nome:** ${{ github.event.release.name }}
+                                      \n**Autor:** ${{ github.event.sender.login }}
+                                      \n**Tag:** ${{ github.event.release.tag_name }}
+                                      \n**Data de criação:** ${{ github.event.release.created_at }}"
+                                    }
+                                  }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }'
