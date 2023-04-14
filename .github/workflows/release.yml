@@ -19,6 +19,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag: ${{ github.ref }}
+      - name: Sleep
+        run: sleep 15
       - name: Publicar release
         run: |
           RELEASE_ID=$(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
@@ -60,9 +62,9 @@ jobs:
                               "widgets": [
                                   {
                                   "textParagraph": {
-                                    \nAutor: ${{ github.event.sender.login }}
+                                    "text":"Autor: ${{ github.event.sender.login }}
                                     \nTag: $(NAME)
-                                    \nBody: $(BODY)
+                                    \nBody: $(BODY)"
                                   }
                                 }
                               ]
