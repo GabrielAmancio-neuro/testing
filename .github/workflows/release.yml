@@ -56,26 +56,24 @@ jobs:
 
           curl --location --request POST '${{ secrets.WEBHOOK }}' \
           --header 'Content-Type: application/json' \
-          --data-raw '{
-              "cards": [
+          --data-raw "{
+              \"cards\": [
                   {
-                      "header": {
-                          "title": "${{ github.repository }}",
-                          "imageUrl": "${{ github.event.sender.avatar_url }}"
+                      \"header\": {
+                          \"title\": \"${{ github.repository }}\",
+                          \"imageUrl\": \"${{ github.event.sender.avatar_url }}\"
                       },
-                      "sections": [
+                      \"sections\": [
                           {
-                              "widgets": [
+                              \"widgets\": [
                                   {
-                                  "textParagraph": {
-                                    "text":"Autor: ${{ github.event.sender.login }}
-                                    \nTag: '$NAME'
-                                    \nBody: '$BODY'"
+                                  \"textParagraph\": {
+                                      \"text\":\"Autor: ${{ github.event.sender.login }}\\nTag: $NAME\\nBody: $BODY\"
                                   }
-                                }
+                              }
                               ]
                           }
                       ]
                   }
               ]
-          }'
+          }"
