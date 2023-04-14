@@ -2,12 +2,8 @@ name: Release
 
 on:
   push:
-    # Sequence of patterns matched against refs/tags
     branches:
     - main
-  # pull_request:
-  #   # Only following types are handled by the action, but one can default to all as well
-  #   types: [opened, reopened, synchronize]
 
 jobs:
   release:
@@ -37,44 +33,41 @@ jobs:
                -X PATCH \
                https://api.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID \
                -d '{"draft":false,"prerelease":false}'
-      # - name: Create release
-      #   id: create_release
-      #   uses: actions/create-release@latest
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-      #   with:
-      #     tag_name: ${{ github.ref }}
-      #     release_name: Release ${{ github.ref }}
-      #     body: |
-      #       $(cat CHANGELOG.md)
-      #     draft: false
-      #     prerelease: false
       - name: Google Chat Notification
         run: |
-            curl --location --request POST '${{ secrets.WEBHOOK }}' \
-            --header 'Content-Type: application/json' \
-            --data-raw '{
-                "cards": [
-                    {
-                        "header": {
-                            "title": "${{ github.repository }}",
-                            "subtitle": "Release ${{ steps.last_release.outputs.id }}",
-                            "imageUrl": "${{ github.event.sender.avatar_url }}"
-                        },
-                        "sections": [
-                            {
-                                "widgets": [
-                                    {
-                                    "textParagraph": {
-                                      "text": "**Nome:** ${{ github.event.release.name }}
-                                      \n**Autor:** ${{ github.event.sender.login }}
-                                      \n**Tag:** ${{ github.event.release.tag_name }}
-                                      \n**Data de criação:** ${{ github.event.release.created_at }}"
-                                    }
+
+          NAME=$(curl -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token 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" \
+            https://api.github.com/repos/gas-neuro/testing/releases | \
+                              jq '.[] | .name' | head -n 1)
+          BODY=$(curl -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token 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" \
+            https://api.github.com/repos/gas-neuro/testing/releases | \
+                              jq '.[] | .body' | head -n 1)
+
+
+          curl --location --request POST '${{ secrets.WEBHOOK }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+              "cards": [
+                  {
+                      "header": {
+                          "title": "${{ github.repository }}",
+                          "imageUrl": "${{ github.event.sender.avatar_url }}"
+                      },
+                      "sections": [
+                          {
+                              "widgets": [
+                                  {
+                                  "textParagraph": {
+                                    \nAutor: ${{ github.event.sender.login }}
+                                    \nTag: $(NAME)
+                                    \nBody: $(BODY)
                                   }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }'
+                                }
+                              ]
+                          }
+                      ]
+                  }
+              ]
+          }'
