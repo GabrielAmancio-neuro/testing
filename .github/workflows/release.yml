@@ -39,7 +39,8 @@ jobs:
                -H "Accept: application/vnd.github.v3+json" \
                -X PATCH \
                https://api.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID \
-               -d '{"draft":false,"prerelease":false, "tag_name": $TAG_NAME}'
+              -d "{\"draft\":false,\"prerelease\":false,\"tag_name\":\"$TAG_NAME\"}"
+
       - name: Google Chat Notification
         run: |
 
@@ -68,8 +69,8 @@ jobs:
                                   {
                                   "textParagraph": {
                                     "text":"Autor: ${{ github.event.sender.login }}
-                                    \nTag: $NAME
-                                    \nBody: $BODY"
+                                    \nTag: '$NAME'
+                                    \nBody: '$BODY'"
                                   }
                                 }
                               ]
