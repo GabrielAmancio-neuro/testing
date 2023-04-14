@@ -21,31 +21,31 @@ jobs:
           tag: ${{ github.ref }}
       - name: Sleep
         run: sleep 15
-      - name: Publicar release
-        run: |
-          RELEASE_ID=$(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                           -H "Accept: application/vnd.github.v3+json" \
-                           https://api.github.com/repos/$GITHUB_REPOSITORY/releases | \
-                           jq '.[] | select(.draft == true) | .id' | head -n 1)
+      # - name: Publicar release
+      #   run: |
+      #     RELEASE_ID=$(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      #                      -H "Accept: application/vnd.github.v3+json" \
+      #                      https://api.github.com/repos/$GITHUB_REPOSITORY/releases | \
+      #                      jq '.[] | select(.draft == true) | .id' | head -n 1)
 
-          echo "::set-output name=id::$RELEASE_ID"
+      #     echo "::set-output name=id::$RELEASE_ID"
 
-          curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-               -H "Accept: application/vnd.github.v3+json" \
-               -X PATCH \
-               https://api.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID \
-               -d '{"draft":false,"prerelease":false}'
+      #     curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      #          -H "Accept: application/vnd.github.v3+json" \
+      #          -X PATCH \
+      #          https://api.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID \
+      #          -d '{"draft":false,"prerelease":false}'
       - name: Google Chat Notification
         run: |
 
           NAME=$(curl -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token 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" \
             https://api.github.com/repos/gas-neuro/testing/releases | \
-                              jq '.[] | .name' | head -n 1)
+                              jq '.[] | select(.draft == true)  | .name' | head -n 1)
           BODY=$(curl -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token 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" \
             https://api.github.com/repos/gas-neuro/testing/releases | \
-                              jq '.[] | .body' | head -n 1)
+                              jq '.[] | select(.draft == true)  | .body' | head -n 1)
 
 
           curl --location --request POST '${{ secrets.WEBHOOK }}' \
@@ -63,8 +63,8 @@ jobs:
                                   {
                                   "textParagraph": {
                                     "text":"Autor: ${{ github.event.sender.login }}
-                                    \nTag: $(NAME)
-                                    \nBody: $(BODY)"
+                                    \nTag: $NAME
+                                    \nBody: $BODY"
                                   }
                                 }
                               ]
