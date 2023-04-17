@@ -68,7 +68,7 @@ jobs:
                               "widgets": [
                                   {
                                   "textParagraph": {
-                                      "text":"Autor: ${{ github.event.sender.login }}\\nTag: '"$NAME"'\\nBody: '"$BODY"'"
+                                      "\"text\":\"Autor: ${{ github.event.sender.login }}\\nTag: $NAME\\nBody: $BODY\""
                                   }
                               }
                               ]
